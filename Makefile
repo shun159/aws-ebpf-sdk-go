@@ -4,6 +4,7 @@ export GOPROXY = direct
 
 CURDIR       := $(abspath .)
 TESTDATADIR  := $(CURDIR)/test-data
+EXAMPLESDIR  := $(CURDIR)/examples
 BPFTOOL      := bpftool
 CLANG        := clang
 LOGFILE_PATH ?= stdout
@@ -50,6 +51,9 @@ TARGETS := \
 		  $(TESTDATADIR)/xdp \
 		  $(TESTDATADIR)/ring_buffer
 
+EXAMPLE_TARGETS := \
+		  $(EXAMPLESDIR)/kprobe/bpf/kprobe
+
 %.bpf.elf: %.bpf.c
 	$(CLANG) $(CLANG_INCLUDE) $(BPF_CFLAGS) -c $< -o $@
 
@@ -58,6 +62,8 @@ VMLINUX_BTF ?= $(wildcard /sys/kernel/btf/vmlinux)
 ifeq ($(VMLINUX_BTF),)
 $(error Cannot find a vmlinux)
 endif
+
+build-examples: $(addsuffix .bpf.elf,$(EXAMPLE_TARGETS))
 
 $(TESTDATADIR)/vmlinux.h:
 	$(BPFTOOL) btf dump file $(VMLINUX_BTF) format c > $@
